@@ -10,6 +10,10 @@ const App = () => {
   const [showAll, setShowAll] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
 
+  const appStyle = {
+    paddingLeft: 40,
+  };
+
   const hook = () => {
     notesService.getAll().then((initialNotes) => {
       setNotes(initialNotes);
@@ -59,14 +63,14 @@ const App = () => {
 
   return (
     <div>
-      <h1>Notes</h1>
+      <h1 style={appStyle}>Notes</h1>
       <Notification message={errorMessage} />
-      <div>
+      <div style={appStyle}>
         <button onClick={() => setShowAll(!showAll)}>
           show {showAll ? 'important' : 'all'}
         </button>
       </div>
-      <ul>
+      <ul id="notes">
         {notesToShow.map((note) => (
           <Note
             key={note.id}
@@ -77,7 +81,7 @@ const App = () => {
           />
         ))}
       </ul>
-      <form onSubmit={addNote}>
+      <form onSubmit={addNote} style={appStyle}>
         <input value={newNote} onChange={handleNoteChange} />
         <button type="submit">save</button>
       </form>
