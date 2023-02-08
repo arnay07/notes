@@ -3,36 +3,26 @@ import Note from './components/Note.js';
 import notesService from './services/notes.js';
 import Notification from './components/Notification.js';
 import Footer from './components/Footer.js';
-import Login from './components/Login.js';
+import LoginForm from './components/LoginForm.js';
+import Togglable from './components/Togglable.js';
+import loginService from './services/login.js';
+import NoteForm from './components/NoteForm.js';
 
 const App = () => {
   const [notes, setNotes] = useState([]);
-  const [newNote, setNewNote] = useState('');
   const [showAll, setShowAll] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
   const [user, setUser] = useState(null);
 
-  const appStyle = {
-    paddingLeft: 40,
-    paddingBottom: 40,
-  };
-
-  const formStyle = {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
-    paddingBottom: 20,
-  };
-
-  const inputStyle = {
-    width: '70%',
-    height: 30,
-  };
   const buttonStyle = {
     width: '10%',
     height: 30,
     cursor: 'pointer',
+  };
+
+  const appStyle = {
+    paddingLeft: 40,
+    paddingBottom: 40,
   };
 
   const topStyle = {
@@ -59,17 +49,11 @@ const App = () => {
     }
   }, []);
 
-  const addNote = (event) => {
-    event.preventDefault();
-    const noteObject = {
-      content: newNote,
-      date: new Date().toISOString(),
-      important: Math.random() > 0.5,
-      id: notes.length + 1,
-    };
+  const createNote = (noteObject) => {
+    noteObject.id = notes.length + 1;
+    noteObject.date = new Date().toISOString();
     notesService.create(noteObject).then((createdNote) => {
       setNotes(notes.concat(createdNote));
-      setNewNote('');
     });
   };
 
@@ -94,10 +78,43 @@ const App = () => {
       });
   };
 
+  const handleLogin = ({ username, password }) => {
+    loginService
+      .login({
+        username,
+        password,
+      })
+      .then((user) => {
+        window.localStorage.setItem('loggedNoteappUser', JSON.stringify(user));
+        setUser(user);
+        notesService.setToken(user.token);
+      })
+      .catch((error) => {
+        setErrorMessage('Wrong credentials');
+        setTimeout(() => {
+          setErrorMessage(null);
+        }, 5000);
+      });
+  };
+
+  const loginForm = () => (
+    <Togglable buttonLabel="Login">
+      <LoginForm handleLogin={handleLogin} />
+    </Togglable>
+  );
+
+  const noteForm = () => (
+    <Togglable buttonLabel="New note">
+      <NoteForm createNote={createNote} />
+    </Togglable>
+  );
+
   return (
     <div>
+      <Notification message={errorMessage} />
       <div style={topStyle}>
         <h1 style={appStyle}>Notes</h1>
+        {user === null && loginForm()}
         {user !== null && (
           <button
             style={buttonStyle}
@@ -110,28 +127,14 @@ const App = () => {
           </button>
         )}
       </div>
-      <Notification message={errorMessage} />
       <div style={appStyle}>
         <button onClick={() => setShowAll(!showAll)}>
           show {showAll ? 'important' : 'all'}
         </button>
+
+        {user !== null && noteForm()}
       </div>
-      {user ? (
-        <form onSubmit={addNote} style={formStyle}>
-          <label htmlFor="newNote">New note :&nbsp; </label>
-          <input
-            style={inputStyle}
-            value={newNote}
-            onChange={({ target }) => setNewNote(target.value)}
-          />
-          &nbsp;
-          <button style={buttonStyle} type="submit">
-            Save
-          </button>
-        </form>
-      ) : (
-        <Login setErrorMessage={setErrorMessage} setUser={setUser} />
-      )}
+
       <ul id="notes">
         {notesToShow.map((note) => (
           <Note
