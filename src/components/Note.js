@@ -1,8 +1,9 @@
-import React from 'react';
-
 const Note = ({ note, toggleImportance }) => {
   const noteStyle = {
-    paddingTop: 20,
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 5,
   };
 
   const label = note.important ? 'Make not important' : 'Make important';

@@ -2,11 +2,12 @@ const Footer = () => {
   const footerStyle = {
     color: 'green',
     fontSize: 14,
-    position: 'absolute',
     bottom: 0,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
     height: 30,
     width: '100%',
-    textAlign: 'center',
   };
   return (
     <div style={footerStyle}>
