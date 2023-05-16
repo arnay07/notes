@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Note from './components/Note.js';
 import notesService from './services/notes.js';
 import Notification from './components/Notification.js';
@@ -13,6 +13,8 @@ const App = () => {
   const [showAll, setShowAll] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
   const [user, setUser] = useState(null);
+  const [username, setUserName] = useState('');
+  const [password, setPassword] = useState('');
 
   const buttonStyle = {
     width: '10%',
@@ -20,16 +22,8 @@ const App = () => {
     cursor: 'pointer',
   };
 
-  const appStyle = {
-    paddingLeft: 40,
-    paddingBottom: 40,
-  };
-
-  const topStyle = {
-    display: 'flex',
-    justifyContent: 'space-between',
+  const tableStyle = {
     width: '100%',
-    paddingBottom: 20,
   };
 
   const hook = () => {
@@ -50,6 +44,7 @@ const App = () => {
   }, []);
 
   const createNote = (noteObject) => {
+    noteFormRef.current.toggleVisibility();
     noteObject.id = notes.length + 1;
     noteObject.date = new Date().toISOString();
     notesService.create(noteObject).then((createdNote) => {
@@ -88,8 +83,10 @@ const App = () => {
         window.localStorage.setItem('loggedNoteappUser', JSON.stringify(user));
         setUser(user);
         notesService.setToken(user.token);
+        setUserName('');
+        setPassword('');
       })
-      .catch((error) => {
+      .catch((_exception) => {
         setErrorMessage('Wrong credentials');
         setTimeout(() => {
           setErrorMessage(null);
@@ -97,14 +94,22 @@ const App = () => {
       });
   };
 
+  const noteFormRef = useRef();
+
   const loginForm = () => (
     <Togglable buttonLabel="Login">
-      <LoginForm handleLogin={handleLogin} />
+      <LoginForm
+        handleLogin={handleLogin}
+        username={username}
+        password={password}
+        setUserName={setUserName}
+        setPassword={setPassword}
+      />
     </Togglable>
   );
 
   const noteForm = () => (
-    <Togglable buttonLabel="New note">
+    <Togglable buttonLabel="New note" ref={noteFormRef}>
       <NoteForm createNote={createNote} />
     </Togglable>
   );
@@ -112,10 +117,11 @@ const App = () => {
   return (
     <div>
       <Notification message={errorMessage} />
-      <div style={topStyle}>
-        <h1 style={appStyle}>Notes</h1>
-        {user === null && loginForm()}
-        {user !== null && (
+      <div>
+        <h1>Notes App</h1>
+        {user === null ? (
+          loginForm()
+        ) : (
           <button
             style={buttonStyle}
             onClick={() => {
@@ -127,25 +133,31 @@ const App = () => {
           </button>
         )}
       </div>
-      <div style={appStyle}>
+      <div>
         <button onClick={() => setShowAll(!showAll)}>
           show {showAll ? 'important' : 'all'}
         </button>
 
-        {user !== null && noteForm()}
+        {user !== null && (
+          <div>
+            <p>{user.name} logged in</p>
+            {noteForm()}
+          </div>
+        )}
       </div>
-
-      <ul id="notes">
-        {notesToShow.map((note) => (
-          <Note
-            key={note.id}
-            note={note}
-            toggleImportance={() => {
-              toggleImportanceOf(note.id);
-            }}
-          />
-        ))}
-      </ul>
+      <table id="notes" style={tableStyle}>
+        <tbody>
+          {notesToShow.map((note) => (
+            <Note
+              key={note.id}
+              note={note}
+              toggleImportance={() => {
+                toggleImportanceOf(note.id);
+              }}
+            />
+          ))}
+        </tbody>
+      </table>
       <Footer />
     </div>
   );
