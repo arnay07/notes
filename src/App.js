@@ -13,8 +13,6 @@ const App = () => {
   const [showAll, setShowAll] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
   const [user, setUser] = useState(null);
-  const [username, setUserName] = useState('');
-  const [password, setPassword] = useState('');
 
   const buttonStyle = {
     width: '10%',
@@ -83,8 +81,6 @@ const App = () => {
         window.localStorage.setItem('loggedNoteappUser', JSON.stringify(user));
         setUser(user);
         notesService.setToken(user.token);
-        setUserName('');
-        setPassword('');
       })
       .catch((_exception) => {
         setErrorMessage('Wrong credentials');
@@ -98,13 +94,7 @@ const App = () => {
 
   const loginForm = () => (
     <Togglable buttonLabel="Login">
-      <LoginForm
-        handleLogin={handleLogin}
-        username={username}
-        password={password}
-        setUserName={setUserName}
-        setPassword={setPassword}
-      />
+      <LoginForm handleLogin={handleLogin} />
     </Togglable>
   );
 
