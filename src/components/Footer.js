@@ -11,7 +11,7 @@ const Footer = () => {
   };
   return (
     <div style={footerStyle}>
-      Note app, made with ❤️ by Arnaud K. &copy; Copyright 2022
+      Note app, made with ❤️ by Arnaud K. &copy; Copyright 2023
     </div>
   );
 };
